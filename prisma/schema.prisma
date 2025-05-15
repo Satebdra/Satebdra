@@ -1,6 +1,7 @@
+// This is your Prisma schema file
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -9,7 +10,7 @@ generator client {
 
 // Supplier information
 model Supplier {
-  id        String    @id @default(uuid())
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   contact   String
   address   String
@@ -20,40 +21,40 @@ model Supplier {
 
 // Material model for raw materials
 model Material {
-  id          String    @id @default(uuid())
-  type        String    // Gold, Silver, Diamond, etc.
-  purity      String    // 22K, 24K, etc.
-  weight      Float
-  unit        String    // grams, carats
-  supplierId  String
-  supplier    Supplier  @relation(fields: [supplierId], references: [id])
-  issues      MaterialIssue[]
-  returns     MaterialReturn[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  type          String    // Gold, Silver, Diamond, etc.
+  purity        String    // 22K, 24K, etc.
+  weight        Float
+  unit          String    // grams, carats
+  supplierId    String    @db.ObjectId
+  supplier      Supplier  @relation(fields: [supplierId], references: [id])
+  issues        MaterialIssue[]
+  returns       MaterialReturn[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   purchasePrice Float
-  currentStock Float
+  currentStock  Float
 }
 
 // Artisan/Karigar information
 model Artisan {
-  id        String    @id @default(uuid())
-  name      String
-  contact   String
-  address   String
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  contact        String
+  address        String
   specialization String
-  issues    MaterialIssue[]
-  returns   MaterialReturn[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  issues         MaterialIssue[]
+  returns        MaterialReturn[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 // Material Issue records
 model MaterialIssue {
-  id          String    @id @default(uuid())
-  materialId  String
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  materialId  String    @db.ObjectId
   material    Material  @relation(fields: [materialId], references: [id])
-  artisanId   String
+  artisanId   String    @db.ObjectId
   artisan     Artisan   @relation(fields: [artisanId], references: [id])
   quantity    Float
   purpose     String
@@ -66,10 +67,10 @@ model MaterialIssue {
 
 // Material Return records
 model MaterialReturn {
-  id          String    @id @default(uuid())
-  materialId  String
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  materialId  String    @db.ObjectId
   material    Material  @relation(fields: [materialId], references: [id])
-  artisanId   String
+  artisanId   String    @db.ObjectId
   artisan     Artisan   @relation(fields: [artisanId], references: [id])
   quantity    Float
   wastage     Float
@@ -82,7 +83,7 @@ model MaterialReturn {
 
 // Audit Log for tracking all material movements
 model AuditLog {
-  id          String    @id @default(uuid())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   action      String    // Receive, Issue, Return
   description String
   userId      String
